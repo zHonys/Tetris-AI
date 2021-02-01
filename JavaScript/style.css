@@ -11,6 +11,10 @@
     height: 20px;
 }
 
+.spectre {
+    background-color: green;
+}
+
 .tetromino {
     background-color: blue;
 }

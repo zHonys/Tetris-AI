@@ -56,8 +56,9 @@ document.addEventListener("DOMContentLoaded", () =>{
     let currentPosition = 4
     let currentSpin = 0;
     let currentTetromino = Math.floor(Math.random() * theTetrominoes.length);
+    var currentSpectre = []
     let current = theTetrominoes[currentTetromino][currentSpin];
-    console.log(theTetrominoes)
+    drawSpectre()
 
     // draw function
 
@@ -95,6 +96,7 @@ document.addEventListener("DOMContentLoaded", () =>{
         }
 
         else if (e.keyCode === 32){
+            undrawSpectre(currentSpectre)
             while (true){
                 if (current.some(index => squares[currentPosition + index + width].classList.contains("taken"))){
                     break
@@ -135,28 +137,17 @@ document.addEventListener("DOMContentLoaded", () =>{
                 else{
                     current.forEach(index => squares[currentPosition + index].classList.add("taken"))
                     currentTetromino = Math.floor(Math.random() * theTetrominoes.length)
+                    currentSpin = 0
                     current = theTetrominoes[currentTetromino][currentSpin]
                     currentPosition = 4
                     draw()
+                    undrawSpectre()
+                    drawSpectre()
                 }
 
             }, t);
         }
         
-        /*if (current.some(index => squares[currentPosition + index + width].classList.contains("taken"))){
-            clearInterval(timerId);
-            
-            frozenId = setTimeout(() => {current.forEach(index => squares[currentPosition + index].classList.add("taken"))
-
-            currentTetromino = Math.floor(Math.random() * theTetrominoes.length)
-            current = theTetrominoes[currentTetromino][currentSpin]
-            currentPosition = 4
-            draw()
-            timerId = setInterval(moveDown, 1000);
-            
-        
-            })
-        }*/
     }
 
     //move to the left and right
@@ -172,6 +163,7 @@ document.addEventListener("DOMContentLoaded", () =>{
             currentPosition+=1
         }
         draw()
+        drawSpectre()
     }
 
     function moveRight(){
@@ -185,11 +177,10 @@ document.addEventListener("DOMContentLoaded", () =>{
             currentPosition -= 1
         }
         draw()
+        drawSpectre()
     }
 
     // Spin Tetromino
-
-    //spinId = setInterval(spin, 500);
 
     function spin(){
         undraw()
@@ -199,6 +190,35 @@ document.addEventListener("DOMContentLoaded", () =>{
         }
         current = theTetrominoes[currentTetromino][currentSpin];
         draw()
+        drawSpectre()
+    }
+
+    // Tetromino Spectre
+
+    function drawSpectre(){
+        undrawSpectre()
+        currentSpectre = []
+        current.forEach(index => currentSpectre.push(currentPosition + index + width))
+        //console.log(currentSpectre)
+        while (true){
+            currentSpectre.forEach(index => {
+                if (!squares[index].classList.contains("taken")){
+                    squares[index].classList.add("spectre")
+            }
+            })
+
+            if (currentSpectre.some(index => squares[index+width].classList.contains("taken"))){
+                break
+            }
+            undrawSpectre()
+            for (i = 0; i < currentSpectre.length; i++){
+                currentSpectre[i] += 10
+            }
+        }
+    }
+
+    function undrawSpectre(){
+        currentSpectre.forEach(index => squares[index].classList.remove("spectre"))
     }
 
 })
