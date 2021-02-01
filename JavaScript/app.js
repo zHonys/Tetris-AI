@@ -75,33 +75,89 @@ document.addEventListener("DOMContentLoaded", () =>{
 
     draw()
 
+    // ket keyboard events
+
+    function control(e){
+        if(e.keyCode === 37 || e.keyCode == 65) {
+            moveLeft()
+        }
+
+        else if(e.keyCode === 39 || e.keyCode == 68) {
+            moveRight()
+        }
+
+        else if(e.keyCode === 38 || e.keyCode == 87) {
+            spin()
+        }
+
+        if((e.keyCode === 40 || e.keyCode == 83) && !(current.some(index => squares[currentPosition + index + width].classList.contains("taken"))) ){
+            moveDown()
+        }
+    }
+    document.addEventListener("keydown", control)
+
     // move the tetromino down
 
-    var timerId = setInterval(moveDown, 500);
+    var timerId = setInterval(moveDown, 1000);
 
     function moveDown(){
         undraw();
         currentPosition += width;
-        draw() 
+        frozen()
+        draw()
+        
     }
 
-    // Frozen tetromino
-    setInterval(frozen, 500);
+    // Frozen tetromino current.forEach(index => squares[currentPosition + index].classList.add("taken"))
     
     function frozen(){
         if (current.some(index => squares[currentPosition + index + width].classList.contains("taken"))){
-            current.forEach(index => squares[currentPosition + index].classList.add("taken"))
-        
-
+            clearInterval(timerId);
+            frozenId = setTimeout(() => {current.forEach(index => squares[currentPosition + index].classList.add("taken"))
+            
+            if (current.some(index => !squares[currentPosition + index + width].classList.contains("taken"))){
+                moveDown()
+                timerId = setInterval(moveDown, 1000);
+                clearTimeout(frozenId)
+            }else{
             currentTetromino = Math.floor(Math.random() * theTetrominoes.length)
             current = theTetrominoes[currentTetromino][currentSpin]
             currentPosition = 4
             draw()
-        }
+            timerId = setInterval(moveDown, 1000);}
+            }, 1000)
+            
         
+        }
     }
 
+    //move to the left and right
 
+    function moveLeft(){
+        undraw()
+        const isLeftEdge = current.some(index => (currentPosition + index) % width === 0)
+        if (!isLeftEdge){
+            currentPosition -= 1
+        }
+
+        if (current.some(index => squares[currentPosition + index].classList.contains("taken"))){
+            currentPosition+=1
+        }
+        draw()
+    }
+
+    function moveRight(){
+        undraw()
+        const isLeftEdge = current.some(index => (currentPosition + index) % width === 9)
+        if (!isLeftEdge){
+            currentPosition += 1
+        }
+
+        if (current.some(index => squares[currentPosition + index].classList.contains("taken"))){
+            currentPosition -= 1
+        }
+        draw()
+    }
 
     // Spin Tetromino
 
