@@ -90,8 +90,17 @@ document.addEventListener("DOMContentLoaded", () =>{
             spin()
         }
 
-        if((e.keyCode === 40 || e.keyCode == 83) && !(current.some(index => squares[currentPosition + index + width].classList.contains("taken"))) ){
+        else if((e.keyCode === 40 || e.keyCode == 83) && !(current.some(index => squares[currentPosition + index + width].classList.contains("taken"))) ){
             moveDown()
+        }
+
+        else if (e.keyCode === 32){
+            while (true){
+                if (current.some(index => squares[currentPosition + index + width].classList.contains("taken"))){
+                    break
+                }
+                moveDown(0)
+            }
         }
     }
     document.addEventListener("keydown", control)
@@ -100,35 +109,54 @@ document.addEventListener("DOMContentLoaded", () =>{
 
     var timerId = setInterval(moveDown, 1000);
 
-    function moveDown(){
+    function moveDown(t){
         undraw();
         currentPosition += width;
-        frozen()
+        frozen(t)
         draw()
         
     }
 
     // Frozen tetromino current.forEach(index => squares[currentPosition + index].classList.add("taken"))
     
-    function frozen(){
+    function frozen(t=1000){
+        /*if (t === undefined){
+            t = 1000
+        }*/
         if (current.some(index => squares[currentPosition + index + width].classList.contains("taken"))){
+            clearInterval(timerId)
+            frozenId = setTimeout(() => {
+                if (current.every(index => !squares[currentPosition + index + width].classList.contains("taken"))){
+                    clearTimeout(frozenId);
+                    moveDown()
+                    timerId = setInterval(moveDown, 1000);
+                }
+                
+                else{
+                    current.forEach(index => squares[currentPosition + index].classList.add("taken"))
+                    currentTetromino = Math.floor(Math.random() * theTetrominoes.length)
+                    current = theTetrominoes[currentTetromino][currentSpin]
+                    currentPosition = 4
+                    draw()
+                }
+
+            }, t);
+        }
+        
+        /*if (current.some(index => squares[currentPosition + index + width].classList.contains("taken"))){
             clearInterval(timerId);
-            frozenId = setTimeout(() => {current.forEach(index => squares[currentPosition + index].classList.add("taken"))
             
-            if (current.some(index => !squares[currentPosition + index + width].classList.contains("taken"))){
-                moveDown()
-                timerId = setInterval(moveDown, 1000);
-                clearTimeout(frozenId)
-            }else{
+            frozenId = setTimeout(() => {current.forEach(index => squares[currentPosition + index].classList.add("taken"))
+
             currentTetromino = Math.floor(Math.random() * theTetrominoes.length)
             current = theTetrominoes[currentTetromino][currentSpin]
             currentPosition = 4
             draw()
-            timerId = setInterval(moveDown, 1000);}
-            }, 1000)
+            timerId = setInterval(moveDown, 1000);
             
         
-        }
+            })
+        }*/
     }
 
     //move to the left and right
@@ -169,9 +197,7 @@ document.addEventListener("DOMContentLoaded", () =>{
         if (currentSpin == 4){
             currentSpin = 0;
         }
-        console.log(currentSpin)
         current = theTetrominoes[currentTetromino][currentSpin];
-        console.log(current)
         draw()
     }
 
