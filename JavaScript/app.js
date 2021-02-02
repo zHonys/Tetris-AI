@@ -1,5 +1,10 @@
 document.addEventListener("DOMContentLoaded", () =>{
-    const grid = document.querySelector(".grid");
+    var div = document.createElement('div');
+  div.id = 'container';
+  div.innerHTML = 'Hi there!';
+  div.className = 'border pad';
+ 
+  document.body.appendChild(div);
     let squares = Array.from(document.querySelectorAll(".grid div"));
     const scoreDisplay = document.querySelector("#score");
     const startBin = document.querySelector("#start-button");
