@@ -1,10 +1,13 @@
 document.addEventListener("DOMContentLoaded", () =>{
     const grid = document.querySelector(".grid");
     let squares = Array.from(document.querySelectorAll(".grid div"));
-    const ScoreDisplay = document.querySelector("#score");
-    const StartBin = document.querySelector("#start-button");
+    const scoreDisplay = document.querySelector("#score");
+    const startBin = document.querySelector("#start-button");
     const width = 10;
     const height = 20;
+    let timerId = null
+    let state = true
+    score = 0
 
     // Tetrominoes
     const iTetromino = [
@@ -52,13 +55,16 @@ document.addEventListener("DOMContentLoaded", () =>{
     
     const theTetrominoes = [iTetromino, lTetromino, jTetromino, oTetromino, zTetromino, tTetromino, sTetromino];
     
-
+    let nextRandom = []
     let currentPosition = 4
     let currentSpin = 0;
     let currentTetromino = Math.floor(Math.random() * theTetrominoes.length);
     var currentSpectre = []
     let current = theTetrominoes[currentTetromino][currentSpin];
+
+    draw()
     drawSpectre()
+    timerId = setInterval(moveDown, 500)
 
     // draw function
 
@@ -74,12 +80,11 @@ document.addEventListener("DOMContentLoaded", () =>{
         })
     }
 
-    draw()
-
     // ket keyboard events
 
     function control(e){
-        if(e.keyCode === 37 || e.keyCode == 65) {
+        if (!state){}
+        else if(e.keyCode === 37 || e.keyCode == 65) {
             moveLeft()
         }
 
@@ -109,8 +114,6 @@ document.addEventListener("DOMContentLoaded", () =>{
 
     // move the tetromino down
 
-    var timerId = setInterval(moveDown, 1000);
-
     function moveDown(t){
         undraw();
         currentPosition += width;
@@ -122,27 +125,28 @@ document.addEventListener("DOMContentLoaded", () =>{
     // Frozen tetromino current.forEach(index => squares[currentPosition + index].classList.add("taken"))
     
     function frozen(t=1000){
-        /*if (t === undefined){
-            t = 1000
-        }*/
         if (current.some(index => squares[currentPosition + index + width].classList.contains("taken"))){
             clearInterval(timerId)
             frozenId = setTimeout(() => {
                 if (current.every(index => !squares[currentPosition + index + width].classList.contains("taken"))){
-                    clearTimeout(frozenId);
                     moveDown()
                     timerId = setInterval(moveDown, 1000);
                 }
                 
                 else{
                     current.forEach(index => squares[currentPosition + index].classList.add("taken"))
-                    currentTetromino = Math.floor(Math.random() * theTetrominoes.length)
+                    currentTetromino = nextRandom[0]
+                    nextRandom.shift()
+                    nextTetrominoShape()
                     currentSpin = 0
                     current = theTetrominoes[currentTetromino][currentSpin]
                     currentPosition = 4
+                    addScore()
                     draw()
-                    undrawSpectre()
                     drawSpectre()
+                    timerId = setInterval(moveDown, 1000)
+                    displayShape()
+                    gameOver()
                 }
 
             }, t);
@@ -184,8 +188,8 @@ document.addEventListener("DOMContentLoaded", () =>{
 
     function spin(){
         undraw()
-        currentSpin += 1
-        if (currentSpin == 4){
+        currentSpin ++
+        if (currentSpin == current.length){
             currentSpin = 0;
         }
         current = theTetrominoes[currentTetromino][currentSpin];
@@ -221,4 +225,68 @@ document.addEventListener("DOMContentLoaded", () =>{
         currentSpectre.forEach(index => squares[index].classList.remove("spectre"))
     }
 
-})
+    // show the next tetrominoes
+
+    const displaySquares = document.querySelectorAll(".miniGrid div")
+    const displayWidth = 4
+    let displayIndex = 0
+
+    const upNextTetrominoes = [
+        [displayWidth, displayWidth+1, displayWidth+2, displayWidth+3], // iTetromino
+        [0, displayWidth, displayWidth+1, displayWidth+2],              // lTetromino
+        [displayWidth, displayWidth+1, displayWidth+2, 2],              // jTetromino
+        [0, 1, displayWidth, displayWidth+1],                           // oTetromino
+        [1, 2, displayWidth, displayWidth+1],                           // zTetromino
+        [1, displayWidth, displayWidth+1, displayWidth+2],              // tTetromino
+        [0, 1, displayWidth+1, displayWidth+2]                          // sTetromino
+    ]
+
+    nextTetrominoShape()
+    displayShape()
+
+    function nextTetrominoShape(){
+        while (nextRandom.length != 5){
+            nextRandom.push(Math.floor(Math.random()*upNextTetrominoes.length)) 
+        }
+    }
+
+    function displayShape(){
+        displaySquares.forEach(index => index.classList.remove("tetromino"))
+        upNextTetrominoes[nextRandom[1]].forEach(index => displaySquares[index+displayWidth].classList.add("tetromino"))
+        upNextTetrominoes[nextRandom[2]].forEach(index => displaySquares[index+displayWidth**2].classList.add("tetromino"))
+        nextRandom.shift()
+        nextTetrominoShape()
+    }
+
+    // add score to the game
+
+    function addScore(){
+        for (let i=0; i < 200; i+=width){
+            let row = [i, i+1, i+2, i+3, i+4, i+5, i+6, i+7, i+8, i+9]
+
+            if (row.every(index => squares[index].classList.contains("taken"))){
+                score += 10
+                scoreDisplay.innerHTML = score
+                row.forEach(index => squares[index].classList.remove("taken"))
+                row.forEach(index => squares[index].classList.remove("tetromino"))
+                const squaresRemoved = squares.splice(i, width)
+                squares = squaresRemoved.concat(squares)
+                squares.forEach(cell => grid.appendChild(cell))
+            }
+        }
+    }
+
+
+    // game over
+
+    function gameOver(){
+        if (current.some(index => squares[currentPosition + index].classList.contains("taken"))){
+            scoreDisplay.innerHTML = score + " - end"
+            clearInterval(timerId)
+            state = false
+            undrawSpectre()
+        }
+    }
+
+
+})  
