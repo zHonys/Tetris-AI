@@ -1,13 +1,12 @@
-/** Funções que precisam ser criadas: 
- * drawShadow()
+/** to do: 
  * hold()
- * 
+ * fix bugs
 */
 
 document.addEventListener("DOMContentLoaded", () =>{
 
 
-    const hold = document.querySelector(".hold")
+    const holdGrid = document.querySelector(".hold")
     const grid = document.querySelector(".grid");
     const miniGrid = document.querySelector(".miniGrid")
     const scoreDisplay = document.querySelector("#score")
@@ -18,7 +17,7 @@ document.addEventListener("DOMContentLoaded", () =>{
 
     for (i=0; i<16;i++){  // create all the hold area divs
         var div = document.createElement('div');
-        hold.appendChild(div);
+        holdGrid.appendChild(div);
     }
 
     for (i=0; i<width*hight+(width*hight)/10;i++){   // create all the grid area divs
@@ -109,6 +108,8 @@ document.addEventListener("DOMContentLoaded", () =>{
     showNextPiece()
     let current = theTetrominoes[random][currentSpin]
     let currentShadow = current
+    let currentHold
+    let temp
     drawShadow()
     draw()
     
@@ -224,6 +225,10 @@ document.addEventListener("DOMContentLoaded", () =>{
                 moveDown(0)
             }
         }
+
+        else if (e.keyCode === 67){
+            hold()
+        }
     }
     document.addEventListener("keydown", control)
 
@@ -250,6 +255,37 @@ document.addEventListener("DOMContentLoaded", () =>{
             shadowPosition += width
         }
         currentShadow.forEach(index => squares[shadowPosition + index].classList.add("shadow"))
+    }
+
+
+    // hold
+
+
+    function hold(){
+        if (currentHold == null){
+            undraw()
+            currentHold = upNextTetrominoes[random]
+            temp = theTetrominoes[random][0]
+            currentPosition = 4
+            currentSpin = 0
+            showNextPiece()
+            current = theTetrominoes[random][currentSpin]
+            draw()
+            drawShadow()
+
+        } else{
+            undraw()
+            currentHold.forEach(index => holdSquares[index+displayWidth].classList.remove("tetromino"))
+            currentHold = upNextTetrominoes[random]
+            current = temp
+            temp = theTetrominoes[random][0]
+            currentPosition = 4
+            currentSpin = 0
+            draw()
+            drawShadow()
+        }
+
+        currentHold.forEach(index => holdSquares[index+displayWidth].classList.add("tetromino"))
     }
 
 
