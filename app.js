@@ -12,8 +12,9 @@ document.addEventListener("DOMContentLoaded", () =>{
     const scoreDisplay = document.querySelector("#score")
     const width = 10
     const hight = 20
-    displayWidth = 4
-    displayHight = 4
+    let displayWidth = 4
+    let displayHight = 4
+    let score = 0
 
     for (i=0; i<16;i++){  // create all the hold area divs
         var div = document.createElement('div');
@@ -108,8 +109,9 @@ document.addEventListener("DOMContentLoaded", () =>{
     showNextPiece()
     let current = theTetrominoes[random][currentSpin]
     let currentShadow = current
-    let currentHold
+    let currentHold = null
     let temp
+    let frozeId = null
     drawShadow()
     draw()
     
@@ -180,7 +182,7 @@ document.addEventListener("DOMContentLoaded", () =>{
 
     function frozen(t=1000){
         if (current.some(index => squares[currentPosition + index + width].classList.contains("taken"))){
-            setTimeout(() => {
+            frozeId = setTimeout(() => {
                 if (current.every(index => !squares[currentPosition + index + width].classList.contains("taken"))){
                     //moveDown()
                 }
@@ -194,6 +196,7 @@ document.addEventListener("DOMContentLoaded", () =>{
                     current = theTetrominoes[random][currentSpin]
                     draw()
                     drawShadow()
+                    addScore()
                 }
             },t)
         }
@@ -222,6 +225,9 @@ document.addEventListener("DOMContentLoaded", () =>{
 
         else if (e.keyCode === 32){
             while (!current.some(index => squares[currentPosition + index + width].classList.contains("taken"))){
+                if (!frozeId === null){
+                    clearTimeout(frozeId)
+                }
                 moveDown(0)
             }
         }
@@ -262,30 +268,56 @@ document.addEventListener("DOMContentLoaded", () =>{
 
 
     function hold(){
-        if (currentHold == null){
+        holdSquares.forEach(index => index.classList.remove("tetromino"))
+        if (currentHold === null){
             undraw()
-            currentHold = upNextTetrominoes[random]
-            temp = theTetrominoes[random][0]
+            currentHold = random
+            showNextPiece()
             currentPosition = 4
             currentSpin = 0
-            showNextPiece()
             current = theTetrominoes[random][currentSpin]
             draw()
             drawShadow()
-
-        } else{
+        }
+        else{
             undraw()
-            currentHold.forEach(index => holdSquares[index+displayWidth].classList.remove("tetromino"))
-            currentHold = upNextTetrominoes[random]
-            current = temp
-            temp = theTetrominoes[random][0]
+            temp = random
+            current = theTetrominoes[currentHold][currentSpin]
+            random = currentHold
+            currentHold = temp
             currentPosition = 4
             currentSpin = 0
+            console.log(random)
             draw()
             drawShadow()
         }
+        upNextTetrominoes[currentHold].forEach(index => holdSquares[index+displayWidth].classList.add("tetromino"))
+    }
 
-        currentHold.forEach(index => holdSquares[index+displayWidth].classList.add("tetromino"))
+
+    // cleaning lines and adding score
+
+
+    function addScore(){
+        for(i=0;i<width*hight-1;i+=10){
+            let row = []
+            for(i2=0;i2< width;i2++){
+                row.push(i+i2)
+            }
+            if(row.every(index => squares[index].classList.contains("taken"))){
+                undraw()
+                score ++
+                scoreDisplay.innerHTML = score
+                row.forEach(index => squares[index].classList.remove("taken"))
+                row.forEach(index => squares[index].classList.remove("tetromino"))
+                row.forEach(index => squares[index].classList.remove("shadow"))
+                const squaresRemoved = squares.splice(i, width)
+                squares = squaresRemoved.concat(squares)
+                squares.forEach(cell => grid.appendChild(cell))
+                draw()
+                drawShadow()
+            }
+        }
     }
 
 
